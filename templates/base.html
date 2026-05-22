@@ -63,6 +63,25 @@
     {% block content %}{% endblock %}
   </main>
 
+  {% if current_user.is_authenticated %}
+  <!-- Onboarding -->
+  <div class="onboard-overlay hidden" id="onboarding" role="dialog" aria-modal="true" aria-label="Знакомство с FlowTrack">
+    <div class="onboard-card">
+      <div class="onboard-progress" id="onboard-progress"></div>
+      <div class="onboard-body" id="onboard-body"></div>
+      <div class="onboard-footer">
+        <div class="onboard-dots" id="onboard-dots"></div>
+        <div class="onboard-actions">
+          <button class="btn btn--ghost btn--sm" id="onboard-skip">Пропустить</button>
+          <button class="btn btn--primary btn--sm" id="onboard-next">
+            Далее <i data-lucide="arrow-right"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
   <script src="{{ url_for('static', filename='js/main.js') }}"></script>
   <script>lucide.createIcons();</script>
 </body>
