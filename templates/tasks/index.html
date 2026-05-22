@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+{% block title %}Задачи — FlowTrack{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Задачи</h1>
+    <p class="page-subtitle">Управляй своими делами</p>
+  </div>
+  <button class="btn btn--primary" id="open-task-modal" aria-label="Создать задачу">
+    <i data-lucide="plus"></i>
+    <span>Новая задача</span>
+  </button>
+</div>
+
+<!-- Filters -->
+<div class="filter-tabs" role="tablist">
+  <a href="?filter=all" role="tab" aria-selected="{{ 'true' if filter == 'all' else 'false' }}"
+     class="filter-tab {% if filter == 'all' %}active{% endif %}">Все</a>
+  <a href="?filter=active" role="tab" aria-selected="{{ 'true' if filter == 'active' else 'false' }}"
+     class="filter-tab {% if filter == 'active' %}active{% endif %}">Активные</a>
+  <a href="?filter=done" role="tab" aria-selected="{{ 'true' if filter == 'done' else 'false' }}"
+     class="filter-tab {% if filter == 'done' %}active{% endif %}">Выполненные</a>
+</div>
+
+<!-- Task list -->
+{% if tasks %}
+<div class="card-grid">
+  {% for task in tasks %}
+  <div class="task-card glass anim-in {% if task.completed %}task-card--done{% endif %} {% if task.is_overdue %}task-card--overdue{% endif %}" style="--delay:{{ loop.index0 % 6 }}">
+    <div class="task-card-header">
+      <form method="POST" action="{{ url_for('tasks.toggle', task_id=task.id) }}" class="inline-form">
+        <button type="submit" class="task-check-big" aria-label="{{ 'Снять отметку' if task.completed else 'Отметить выполненной' }}">
+          <i data-lucide="{{ 'check-circle-2' if task.completed else 'circle' }}"></i>
+        </button>
+      </form>
+      <div class="task-card-meta">
+        {% if task.is_overdue %}
+          <span class="badge badge--rose"><i data-lucide="triangle-alert"></i> Просрочено</span>
+        {% elif task.deadline %}
+          <span class="badge badge--muted"><i data-lucide="calendar"></i> {{ task.deadline.strftime('%d.%m.%Y') }}</span>
+        {% endif %}
+      </div>
+      <form method="POST" action="{{ url_for('tasks.delete', task_id=task.id) }}" class="inline-form" onsubmit="return confirm('Удалить задачу?')">
+        <button type="submit" class="btn-icon btn-icon--danger" aria-label="Удалить задачу">
+          <i data-lucide="trash-2"></i>
+        </button>
+      </form>
+    </div>
+    <h3 class="task-card-title">{{ task.title }}</h3>
+    {% if task.description %}
+    <p class="task-card-desc">{{ task.description }}</p>
+    {% endif %}
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="empty-page glass">
+  <i data-lucide="inbox"></i>
+  <h2>Задач нет</h2>
+  <p>Создай первую задачу чтобы начать</p>
+  <button class="btn btn--primary" id="open-task-modal-empty">
+    <i data-lucide="plus"></i> Создать задачу
+  </button>
+</div>
+{% endif %}
+
+<!-- Modal -->
+<div class="modal-overlay" id="task-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title" hidden>
+  <div class="modal glass">
+    <div class="modal-header">
+      <h2 id="modal-title">Новая задача</h2>
+      <button class="btn-icon" id="close-task-modal" aria-label="Закрыть">
+        <i data-lucide="x"></i>
+      </button>
+    </div>
+    <form method="POST" action="{{ url_for('tasks.create') }}" class="modal-form">
+      <div class="field">
+        <label for="title" class="field-label">Название <span class="required">*</span></label>
+        <input type="text" id="title" name="title" class="field-input" placeholder="Что нужно сделать?" required>
+      </div>
+      <div class="field">
+        <label for="description" class="field-label">Описание</label>
+        <textarea id="description" name="description" class="field-input field-textarea" placeholder="Подробности (необязательно)" rows="3"></textarea>
+      </div>
+      <div class="field">
+        <label for="deadline" class="field-label">Дедлайн</label>
+        <input type="date" id="deadline" name="deadline" class="field-input" min="{{ today }}">
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn--ghost" id="close-task-modal-2">Отмена</button>
+        <button type="submit" class="btn btn--primary">
+          <i data-lucide="plus"></i> Создать
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

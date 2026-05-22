@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+{% block title %}Дашборд — FlowTrack{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Привет, {{ current_user.name }} 👋</h1>
+    <p class="page-subtitle">{{ today.strftime('%d %B %Y') }}</p>
+  </div>
+</div>
+
+<div class="bento">
+  <!-- Stat cards -->
+  <div class="bento-stat glass anim-in" style="--delay:0">
+    <div class="stat-icon stat-icon--indigo"><i data-lucide="list-todo"></i></div>
+    <div class="stat-value">{{ active_count }}</div>
+    <div class="stat-label">Активных задач</div>
+  </div>
+
+  <div class="bento-stat glass anim-in" style="--delay:1">
+    <div class="stat-icon stat-icon--emerald"><i data-lucide="check-circle-2"></i></div>
+    <div class="stat-value">{{ done_count }}</div>
+    <div class="stat-label">Выполнено</div>
+  </div>
+
+  <div class="bento-stat glass anim-in" style="--delay:2">
+    <div class="stat-icon stat-icon--cyan"><i data-lucide="flame"></i></div>
+    <div class="stat-value">{{ best_streak }}</div>
+    <div class="stat-label">Лучший streak</div>
+  </div>
+
+  <div class="bento-stat glass anim-in" style="--delay:3">
+    <div class="stat-icon stat-icon--rose"><i data-lucide="triangle-alert"></i></div>
+    <div class="stat-value">{{ overdue_count }}</div>
+    <div class="stat-label">Просрочено</div>
+  </div>
+
+  <!-- Tasks widget -->
+  <div class="bento-widget bento-widget--tasks glass anim-in" style="--delay:4">
+    <div class="widget-header">
+      <h2 class="widget-title"><i data-lucide="check-square"></i> Задачи</h2>
+      <a href="{{ url_for('tasks.index') }}" class="widget-link">Все <i data-lucide="arrow-right"></i></a>
+    </div>
+    {% set active_tasks = tasks | selectattr('completed', 'equalto', false) | list %}
+    {% if active_tasks %}
+      <ul class="task-list">
+        {% for task in active_tasks[:5] %}
+        <li class="task-item {% if task.is_overdue %}task-item--overdue{% endif %}">
+          <form method="POST" action="{{ url_for('tasks.toggle', task_id=task.id) }}" class="inline-form">
+            <button type="submit" class="task-check" aria-label="Отметить выполненной">
+              <i data-lucide="circle"></i>
+            </button>
+          </form>
+          <div class="task-info">
+            <span class="task-title">{{ task.title }}</span>
+            {% if task.deadline %}
+            <span class="task-deadline {% if task.is_overdue %}task-deadline--overdue{% endif %}">
+              <i data-lucide="calendar"></i>
+              {{ task.deadline.strftime('%d.%m') }}
+            </span>
+            {% endif %}
+          </div>
+        </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <div class="empty-state">
+        <i data-lucide="inbox"></i>
+        <p>Нет активных задач</p>
+        <a href="{{ url_for('tasks.index') }}" class="btn btn--ghost btn--sm">Добавить задачу</a>
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Habits widget -->
+  <div class="bento-widget bento-widget--habits glass anim-in" style="--delay:5">
+    <div class="widget-header">
+      <h2 class="widget-title"><i data-lucide="flame"></i> Привычки сегодня</h2>
+      <a href="{{ url_for('habits.index') }}" class="widget-link">Все <i data-lucide="arrow-right"></i></a>
+    </div>
+    {% if habits %}
+      <ul class="habit-list">
+        {% for habit in habits[:5] %}
+        <li class="habit-item">
+          <div class="habit-info">
+            <span class="habit-title">{{ habit.title }}</span>
+            <span class="habit-streak"><i data-lucide="flame"></i> {{ habit.streak }}</span>
+          </div>
+          <form method="POST" action="{{ url_for('habits.check', habit_id=habit.id) }}" class="inline-form">
+            <button type="submit" class="habit-check {% if habit.done_today %}habit-check--done{% endif %}" aria-label="{{ 'Снять отметку' if habit.done_today else 'Отметить выполненной' }}">
+              <i data-lucide="{{ 'check-circle-2' if habit.done_today else 'circle' }}"></i>
+            </button>
+          </form>
+        </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <div class="empty-state">
+        <i data-lucide="sparkles"></i>
+        <p>Нет привычек</p>
+        <a href="{{ url_for('habits.index') }}" class="btn btn--ghost btn--sm">Добавить привычку</a>
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

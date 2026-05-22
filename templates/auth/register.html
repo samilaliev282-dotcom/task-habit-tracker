@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+{% block title %}Регистрация — FlowTrack{% endblock %}
+
+{% block content %}
+<div class="auth-wrap">
+  <div class="auth-card glass">
+    <div class="auth-header">
+      <span class="auth-logo">⚡</span>
+      <h1 class="auth-title">Создать аккаунт</h1>
+      <p class="auth-subtitle">Начни отслеживать задачи и привычки</p>
+    </div>
+
+    <form method="POST" action="{{ url_for('auth.register') }}" class="auth-form" novalidate>
+      <div class="field">
+        <label for="name" class="field-label">Имя <span aria-hidden="true" class="required">*</span></label>
+        <div class="field-input-wrap">
+          <i data-lucide="user" class="field-icon"></i>
+          <input
+            type="text" id="name" name="name"
+            class="field-input" placeholder="Как тебя зовут?"
+            autocomplete="name" required minlength="2"
+          >
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="email" class="field-label">Email <span aria-hidden="true" class="required">*</span></label>
+        <div class="field-input-wrap">
+          <i data-lucide="mail" class="field-icon"></i>
+          <input
+            type="email" id="email" name="email"
+            class="field-input" placeholder="you@example.com"
+            autocomplete="email" required
+          >
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="password" class="field-label">Пароль <span aria-hidden="true" class="required">*</span></label>
+        <div class="field-input-wrap">
+          <i data-lucide="lock" class="field-icon"></i>
+          <input
+            type="password" id="password" name="password"
+            class="field-input" placeholder="Минимум 6 символов"
+            autocomplete="new-password" required minlength="6"
+          >
+          <button type="button" class="field-toggle" aria-label="Показать пароль" data-target="password">
+            <i data-lucide="eye"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="confirm" class="field-label">Повтори пароль <span aria-hidden="true" class="required">*</span></label>
+        <div class="field-input-wrap">
+          <i data-lucide="lock" class="field-icon"></i>
+          <input
+            type="password" id="confirm" name="confirm"
+            class="field-input" placeholder="Ещё раз"
+            autocomplete="new-password" required
+          >
+          <button type="button" class="field-toggle" aria-label="Показать пароль" data-target="confirm">
+            <i data-lucide="eye"></i>
+          </button>
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn--primary btn--full">
+        <i data-lucide="user-plus"></i>
+        Создать аккаунт
+      </button>
+    </form>
+
+    <p class="auth-switch">Уже есть аккаунт? <a href="{{ url_for('auth.login') }}">Войти</a></p>
+  </div>
+</div>
+{% endblock %}

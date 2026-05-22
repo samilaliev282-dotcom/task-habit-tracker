@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% block title %}Вход — FlowTrack{% endblock %}
+
+{% block content %}
+<div class="auth-wrap">
+  <div class="auth-card glass">
+    <div class="auth-header">
+      <span class="auth-logo">⚡</span>
+      <h1 class="auth-title">Добро пожаловать</h1>
+      <p class="auth-subtitle">Войди в свой аккаунт</p>
+    </div>
+
+    <form method="POST" action="{{ url_for('auth.login') }}" class="auth-form" novalidate>
+      <div class="field">
+        <label for="email" class="field-label">Email</label>
+        <div class="field-input-wrap">
+          <i data-lucide="mail" class="field-icon"></i>
+          <input
+            type="email" id="email" name="email"
+            class="field-input" placeholder="you@example.com"
+            autocomplete="email" required
+          >
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="password" class="field-label">Пароль</label>
+        <div class="field-input-wrap">
+          <i data-lucide="lock" class="field-icon"></i>
+          <input
+            type="password" id="password" name="password"
+            class="field-input" placeholder="••••••"
+            autocomplete="current-password" required
+          >
+          <button type="button" class="field-toggle" aria-label="Показать пароль" data-target="password">
+            <i data-lucide="eye"></i>
+          </button>
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn--primary btn--full">
+        <i data-lucide="log-in"></i>
+        Войти
+      </button>
+    </form>
+
+    <p class="auth-switch">Нет аккаунта? <a href="{{ url_for('auth.register') }}">Зарегистрироваться</a></p>
+  </div>
+</div>
+{% endblock %}
