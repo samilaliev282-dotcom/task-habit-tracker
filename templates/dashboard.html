@@ -21,8 +21,8 @@
 <svg width="0" height="0" style="position:absolute">
   <defs>
     <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#ef4444"/>
-      <stop offset="100%" stop-color="#fb7185"/>
+      <stop offset="0%" stop-color="#6366f1"/>
+      <stop offset="100%" stop-color="#06b6d4"/>
     </linearGradient>
   </defs>
 </svg>
@@ -94,7 +94,7 @@
   </div>
 
   <!-- Tasks widget -->
-  <div class="bento-widget gcard anim-in" style="--delay:6">
+  <div class="bento-widget bento-widget--tasks gcard anim-in" style="--delay:6">
     <div class="widget-header">
       <h2 class="widget-title"><i data-lucide="check-square"></i> Задачи</h2>
       <a href="{{ url_for('tasks.index') }}" class="widget-link">Все <i data-lucide="arrow-right"></i></a>
@@ -131,7 +131,7 @@
   </div>
 
   <!-- Habits widget -->
-  <div class="bento-widget gcard anim-in" style="--delay:7">
+  <div class="bento-widget bento-widget--habits gcard anim-in" style="--delay:7">
     <div class="widget-header">
       <h2 class="widget-title"><i data-lucide="flame"></i> Привычки</h2>
       <a href="{{ url_for('habits.index') }}" class="widget-link">Все <i data-lucide="arrow-right"></i></a>
@@ -221,8 +221,8 @@ if (ctx) {
       datasets: [{
         label: 'Выполнено задач',
         data: {{ weeks_data|safe }},
-        backgroundColor: 'rgba(239,68,68,0.3)',
-        borderColor: '#ef4444',
+        backgroundColor: 'rgba(99,102,241,0.2)',
+        borderColor: '#6366f1',
         borderWidth: 2,
         borderRadius: 6,
         borderSkipped: false,
@@ -241,8 +241,8 @@ if (ctx) {
         }
       },
       scales: {
-        x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8', font: { family: 'Geist' } } },
-        y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8', stepSize: 1, font: { family: 'Geist' } }, beginAtZero: true }
+        x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#71717a', font: { family: 'Inter' } } },
+        y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#71717a', stepSize: 1, font: { family: 'Inter' } }, beginAtZero: true }
       }
     }
   });
