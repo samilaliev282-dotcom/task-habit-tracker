@@ -282,6 +282,87 @@ document.addEventListener('DOMContentLoaded', () => {
   // Init onboarding
   initOnboarding();
 
+  // ===== POMODORO =====
+  const pomoDisplay  = document.getElementById('pomo-display');
+  const pomoCircle   = document.getElementById('pomo-circle');
+  const pomoStart    = document.getElementById('pomo-start');
+  const pomoReset    = document.getElementById('pomo-reset');
+  const pomoCount    = document.getElementById('pomo-count');
+  const pomoModeBtns = document.querySelectorAll('.pomo-mode-btn');
+
+  if (pomoDisplay) {
+    const CIRC = 326.7;
+    let totalSecs = 25 * 60;
+    let remaining = totalSecs;
+    let timer = null;
+    let sessions = parseInt(localStorage.getItem('pomo_sessions_' + new Date().toDateString()) || '0');
+    if (pomoCount) pomoCount.textContent = sessions;
+
+    function updateDisplay() {
+      const m = String(Math.floor(remaining / 60)).padStart(2, '0');
+      const s = String(remaining % 60).padStart(2, '0');
+      pomoDisplay.textContent = `${m}:${s}`;
+      const progress = (totalSecs - remaining) / totalSecs;
+      pomoCircle.style.strokeDashoffset = CIRC * (1 - progress);
+    }
+
+    function startTimer() {
+      if (timer) return;
+      pomoStart.innerHTML = '<i data-lucide="pause"></i> Пауза';
+      lucide.createIcons();
+      timer = setInterval(() => {
+        remaining--;
+        updateDisplay();
+        if (remaining <= 0) {
+          clearInterval(timer); timer = null;
+          sessions++;
+          localStorage.setItem('pomo_sessions_' + new Date().toDateString(), sessions);
+          if (pomoCount) pomoCount.textContent = sessions;
+          pomoStart.innerHTML = '<i data-lucide="play"></i> Старт';
+          lucide.createIcons();
+          // Notify
+          if (Notification.permission === 'granted') {
+            new Notification('FlowTrack', { body: 'Помодоро завершено! Время отдохнуть 🎉' });
+          }
+        }
+      }, 1000);
+    }
+
+    function pauseTimer() {
+      clearInterval(timer); timer = null;
+      pomoStart.innerHTML = '<i data-lucide="play"></i> Старт';
+      lucide.createIcons();
+    }
+
+    pomoStart.addEventListener('click', () => {
+      if (timer) pauseTimer(); else startTimer();
+    });
+
+    pomoReset.addEventListener('click', () => {
+      pauseTimer();
+      remaining = totalSecs;
+      updateDisplay();
+    });
+
+    pomoModeBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        pauseTimer();
+        pomoModeBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        totalSecs = parseInt(btn.dataset.minutes) * 60;
+        remaining = totalSecs;
+        updateDisplay();
+      });
+    });
+
+    // Request notification permission
+    if (Notification.permission === 'default') {
+      Notification.requestPermission();
+    }
+
+    updateDisplay();
+  }
+
   // Shuffle animation on button click
   document.querySelectorAll('.btn, .nav-link, .filter-tab').forEach(btn => {
     btn.addEventListener('click', function () {

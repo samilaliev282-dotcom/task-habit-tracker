@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% block title %}Заметки — FlowTrack{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-header-left">
+    <h1 class="page-title">Заметки</h1>
+    <p class="page-subtitle">{{ notes|length }} заметок</p>
+  </div>
+  <form method="POST" action="{{ url_for('notes.create') }}">
+    <button type="submit" class="btn btn--primary">
+      <i data-lucide="plus"></i><span>Новая заметка</span>
+    </button>
+  </form>
+</div>
+
+{% if notes %}
+<div class="notes-grid">
+  {% for note in notes %}
+  <a href="{{ url_for('notes.edit', note_id=note.id) }}" class="note-card note-card--{{ note.color }} gcard anim-in" style="--delay:{{ loop.index0 % 6 }}">
+    <div class="note-card-header">
+      <h3 class="note-card-title">{{ note.title }}</h3>
+      <form method="POST" action="{{ url_for('notes.delete', note_id=note.id) }}" class="inline-form" onsubmit="return confirm('Удалить заметку?')">
+        <button type="submit" class="btn-icon btn-icon--danger" onclick="event.stopPropagation()" aria-label="Удалить">
+          <i data-lucide="trash-2"></i>
+        </button>
+      </form>
+    </div>
+    {% if note.content %}
+    <p class="note-card-preview">{{ note.content[:120] }}{% if note.content|length > 120 %}…{% endif %}</p>
+    {% else %}
+    <p class="note-card-empty">Пусто</p>
+    {% endif %}
+    <div class="note-card-date">{{ note.updated_at.strftime('%d.%m.%Y %H:%M') }}</div>
+  </a>
+  {% endfor %}
+</div>
+{% else %}
+<div class="empty-page gcard">
+  <i data-lucide="sticky-note"></i>
+  <h2>Нет заметок</h2>
+  <p>Создай первую заметку прямо сейчас</p>
+  <form method="POST" action="{{ url_for('notes.create') }}">
+    <button type="submit" class="btn btn--primary"><i data-lucide="plus"></i> Создать заметку</button>
+  </form>
+</div>
+{% endif %}
+{% endblock %}

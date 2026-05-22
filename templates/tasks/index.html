@@ -5,17 +5,26 @@
 <div class="page-header">
   <div class="page-header-left">
     <h1 class="page-title">Задачи</h1>
-    <p class="page-subtitle">{{ tasks | length }} всего · {{ tasks | selectattr('completed', 'equalto', false) | list | length }} активных</p>
+    <p class="page-subtitle">{{ tasks|length }} всего · {{ tasks|selectattr('completed','equalto',false)|list|length }} активных</p>
   </div>
   <button class="btn btn--primary" id="open-task-modal">
     <i data-lucide="plus"></i><span>Новая задача</span>
   </button>
 </div>
 
-<div class="filter-tabs" role="tablist">
-  <a href="?filter=all" role="tab" class="filter-tab {% if filter == 'all' %}active{% endif %}">Все</a>
-  <a href="?filter=active" role="tab" class="filter-tab {% if filter == 'active' %}active{% endif %}">Активные</a>
-  <a href="?filter=done" role="tab" class="filter-tab {% if filter == 'done' %}active{% endif %}">Выполненные</a>
+<!-- Filters -->
+<div class="filters-row">
+  <div class="filter-tabs" role="tablist">
+    <a href="?filter=all" class="filter-tab {% if filter=='all' %}active{% endif %}">Все</a>
+    <a href="?filter=active" class="filter-tab {% if filter=='active' %}active{% endif %}">Активные</a>
+    <a href="?filter=done" class="filter-tab {% if filter=='done' %}active{% endif %}">Выполненные</a>
+  </div>
+  <div class="tag-filters">
+    <a href="?filter={{ filter }}" class="tag-chip {% if not tag_filter %}tag-chip--active{% endif %}">Все</a>
+    {% for tag in all_tags %}
+    <a href="?filter={{ filter }}&tag={{ tag }}" class="tag-chip {% if tag_filter==tag %}tag-chip--active{% endif %}">{{ tag }}</a>
+    {% endfor %}
+  </div>
 </div>
 
 {% if tasks %}
@@ -25,7 +34,7 @@
     <div class="task-card-top">
       <div class="task-card-left">
         <form method="POST" action="{{ url_for('tasks.toggle', task_id=task.id) }}" class="inline-form">
-          <button type="submit" class="task-check-big" aria-label="{{ 'Снять отметку' if task.completed else 'Выполнить' }}">
+          <button type="submit" class="task-check-big">
             <i data-lucide="{{ 'check-circle-2' if task.completed else 'circle' }}"></i>
           </button>
         </form>
@@ -33,29 +42,24 @@
           <h3 class="task-card-title">{{ task.title }}</h3>
           <div class="task-card-badges">
             <span class="badge badge--{{ task.priority }}">
-              {% if task.priority == 'high' %}<i data-lucide="arrow-up"></i> Высокий
-              {% elif task.priority == 'medium' %}<i data-lucide="minus"></i> Средний
+              {% if task.priority=='high' %}<i data-lucide="arrow-up"></i> Высокий
+              {% elif task.priority=='medium' %}<i data-lucide="minus"></i> Средний
               {% else %}<i data-lucide="arrow-down"></i> Низкий{% endif %}
             </span>
-            {% if task.is_overdue %}
-              <span class="badge badge--rose"><i data-lucide="triangle-alert"></i> Просрочено</span>
-            {% elif task.deadline %}
-              <span class="badge badge--muted"><i data-lucide="calendar"></i> {{ task.deadline.strftime('%d.%m.%Y') }}</span>
+            {% if task.recurring != 'none' %}
+            <span class="badge badge--muted"><i data-lucide="repeat"></i> {{ 'Ежедневно' if task.recurring=='daily' else 'Еженедельно' }}</span>
             {% endif %}
+            {% if task.is_overdue %}<span class="badge badge--rose"><i data-lucide="triangle-alert"></i> Просрочено</span>
+            {% elif task.deadline %}<span class="badge badge--muted"><i data-lucide="calendar"></i> {{ task.deadline.strftime('%d.%m') }}</span>{% endif %}
+            {% for tag in task.tags %}<span class="badge badge--tag">{{ tag }}</span>{% endfor %}
           </div>
         </div>
       </div>
-      <div class="task-card-actions">
-        <form method="POST" action="{{ url_for('tasks.delete', task_id=task.id) }}" class="inline-form" onsubmit="return confirm('Удалить задачу?')">
-          <button type="submit" class="btn-icon btn-icon--danger" aria-label="Удалить">
-            <i data-lucide="trash-2"></i>
-          </button>
-        </form>
-      </div>
+      <form method="POST" action="{{ url_for('tasks.delete', task_id=task.id) }}" class="inline-form" onsubmit="return confirm('Удалить?')">
+        <button type="submit" class="btn-icon btn-icon--danger"><i data-lucide="trash-2"></i></button>
+      </form>
     </div>
-    {% if task.description %}
-    <p class="task-card-desc">{{ task.description }}</p>
-    {% endif %}
+    {% if task.description %}<p class="task-card-desc">{{ task.description }}</p>{% endif %}
   </div>
   {% endfor %}
 </div>
@@ -63,19 +67,17 @@
 <div class="empty-page gcard">
   <i data-lucide="inbox"></i>
   <h2>Задач нет</h2>
-  <p>Создай первую задачу чтобы начать</p>
-  <button class="btn btn--primary" id="open-task-modal-empty">
-    <i data-lucide="plus"></i> Создать задачу
-  </button>
+  <p>Создай первую задачу</p>
+  <button class="btn btn--primary" id="open-task-modal-empty"><i data-lucide="plus"></i> Создать</button>
 </div>
 {% endif %}
 
 <!-- Modal -->
-<div class="modal-overlay" id="task-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title" hidden>
+<div class="modal-overlay" id="task-modal" role="dialog" aria-modal="true" hidden>
   <div class="modal gcard">
     <div class="modal-header">
-      <h2 id="modal-title">Новая задача</h2>
-      <button class="btn-icon" id="close-task-modal" aria-label="Закрыть"><i data-lucide="x"></i></button>
+      <h2>Новая задача</h2>
+      <button class="btn-icon" id="close-task-modal"><i data-lucide="x"></i></button>
     </div>
     <form method="POST" action="{{ url_for('tasks.create') }}" class="modal-form">
       <div class="field">
@@ -84,22 +86,35 @@
       </div>
       <div class="field">
         <label for="description" class="field-label">Описание</label>
-        <textarea id="description" name="description" class="field-input field-textarea" placeholder="Подробности..." rows="3"></textarea>
+        <textarea id="description" name="description" class="field-input field-textarea" rows="3" placeholder="Подробности..."></textarea>
       </div>
       <div class="field">
         <label class="field-label">Приоритет</label>
         <div class="priority-group" id="prio-group">
-          <button type="button" class="prio-btn prio-btn--high" data-value="high">
-            <i data-lucide="arrow-up"></i> Высокий
-          </button>
-          <button type="button" class="prio-btn prio-btn--medium selected" data-value="medium">
-            <i data-lucide="minus"></i> Средний
-          </button>
-          <button type="button" class="prio-btn prio-btn--low" data-value="low">
-            <i data-lucide="arrow-down"></i> Низкий
-          </button>
+          <button type="button" class="prio-btn prio-btn--high" data-value="high"><i data-lucide="arrow-up"></i> Высокий</button>
+          <button type="button" class="prio-btn prio-btn--medium selected" data-value="medium"><i data-lucide="minus"></i> Средний</button>
+          <button type="button" class="prio-btn prio-btn--low" data-value="low"><i data-lucide="arrow-down"></i> Низкий</button>
         </div>
         <input type="hidden" id="priority-input" name="priority" value="medium">
+      </div>
+      <div class="field">
+        <label class="field-label">Теги</label>
+        <div class="tags-group">
+          {% for tag in all_tags %}
+          <label class="tag-label">
+            <input type="checkbox" name="tags" value="{{ tag }}">
+            <span>{{ tag }}</span>
+          </label>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label">Повторение</label>
+        <select name="recurring" class="field-input">
+          <option value="none">Не повторять</option>
+          <option value="daily">Каждый день</option>
+          <option value="weekly">Каждую неделю</option>
+        </select>
       </div>
       <div class="field">
         <label for="deadline" class="field-label">Дедлайн</label>
@@ -107,9 +122,7 @@
       </div>
       <div class="modal-actions">
         <button type="button" class="btn btn--ghost" id="close-task-modal-2">Отмена</button>
-        <button type="submit" class="btn btn--primary">
-          <i data-lucide="plus"></i> Создать
-        </button>
+        <button type="submit" class="btn btn--primary"><i data-lucide="plus"></i> Создать</button>
       </div>
     </form>
   </div>

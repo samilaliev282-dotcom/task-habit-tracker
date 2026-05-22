@@ -2,6 +2,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime, date
+import json
 
 db = SQLAlchemy()
 
@@ -15,6 +16,7 @@ class User(UserMixin, db.Model):
 
     tasks = db.relationship('Task', backref='user', lazy=True, cascade='all, delete-orphan')
     habits = db.relationship('Habit', backref='user', lazy=True, cascade='all, delete-orphan')
+    notes = db.relationship('Note', backref='user', lazy=True, cascade='all, delete-orphan')
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -29,9 +31,23 @@ class Task(db.Model):
     title = db.Column(db.String(200), nullable=False)
     description = db.Column(db.Text, default='')
     deadline = db.Column(db.Date, nullable=True)
-    priority = db.Column(db.String(10), default='medium')  # high / medium / low
+    priority = db.Column(db.String(10), default='medium')
+    tags_json = db.Column(db.Text, default='[]')
+    recurring = db.Column(db.String(10), default='none')  # none / daily / weekly
     completed = db.Column(db.Boolean, default=False)
+    completed_at = db.Column(db.DateTime, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    @property
+    def tags(self):
+        try:
+            return json.loads(self.tags_json or '[]')
+        except Exception:
+            return []
+
+    @tags.setter
+    def tags(self, val):
+        self.tags_json = json.dumps(val)
 
     @property
     def is_overdue(self):
@@ -76,3 +92,13 @@ class HabitLog(db.Model):
     date = db.Column(db.Date, default=date.today, nullable=False)
 
     __table_args__ = (db.UniqueConstraint('habit_id', 'date'),)
+
+
+class Note(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    title = db.Column(db.String(200), default='Без названия')
+    content = db.Column(db.Text, default='')
+    color = db.Column(db.String(20), default='default')
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

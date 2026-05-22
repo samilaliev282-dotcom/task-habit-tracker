@@ -6,6 +6,7 @@ from routes.auth import auth
 from routes.dashboard import dashboard
 from routes.tasks import tasks_bp
 from routes.habits import habits_bp
+from routes.notes import notes_bp
 
 def create_app():
     app = Flask(__name__)
@@ -28,6 +29,7 @@ def create_app():
     app.register_blueprint(dashboard)
     app.register_blueprint(tasks_bp)
     app.register_blueprint(habits_bp)
+    app.register_blueprint(notes_bp)
 
     with app.app_context():
         db.create_all()

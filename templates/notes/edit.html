@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block title %}{{ note.title }} — FlowTrack{% endblock %}
+
+{% block content %}
+<form method="POST" action="{{ url_for('notes.edit', note_id=note.id) }}" class="note-editor">
+  <div class="note-editor-header">
+    <a href="{{ url_for('notes.index') }}" class="btn btn--ghost btn--sm">
+      <i data-lucide="arrow-left"></i> Назад
+    </a>
+    <input type="text" name="title" value="{{ note.title }}" class="note-title-input" placeholder="Название заметки" maxlength="200">
+    <div class="note-color-picker">
+      {% for c in colors %}
+      <label class="color-dot color-dot--{{ c }} {% if note.color == c %}selected{% endif %}">
+        <input type="radio" name="color" value="{{ c }}" {% if note.color == c %}checked{% endif %}>
+      </label>
+      {% endfor %}
+    </div>
+    <button type="submit" class="btn btn--primary btn--sm">
+      <i data-lucide="save"></i> Сохранить
+    </button>
+  </div>
+  <textarea name="content" class="note-content-input" placeholder="Начни писать...">{{ note.content }}</textarea>
+</form>
+{% endblock %}
