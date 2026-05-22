@@ -2,50 +2,95 @@
 {% block title %}Дашборд — FlowTrack{% endblock %}
 
 {% block content %}
-<div class="page-header">
-  <div>
-    <h1 class="page-title">Привет, {{ current_user.name }} 👋</h1>
-    <p class="page-subtitle">{{ today.strftime('%d %B %Y') }}</p>
+<!-- Greeting hero -->
+<div class="greeting-hero glass anim-in" style="--delay:0">
+  <div class="greeting-text">
+    <h1>Привет, <span>{{ current_user.name }}</span> 👋</h1>
+    <p>
+      {% if active_count == 0 %}
+        Все задачи выполнены — отличный день!
+      {% elif overdue_count > 0 %}
+        {{ overdue_count }} задач просрочено — давай разберёмся
+      {% else %}
+        У тебя {{ active_count }} активных задач сегодня
+      {% endif %}
+    </p>
+  </div>
+  <div class="greeting-date">
+    <div class="date-big">{{ today.strftime('%d.%m') }}</div>
+    <div class="date-small">{{ today.strftime('%A, %Y') }}</div>
   </div>
 </div>
 
+<!-- SVG gradient for ring -->
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#22d3ee"/>
+      <stop offset="100%" stop-color="#818cf8"/>
+    </linearGradient>
+  </defs>
+</svg>
+
 <div class="bento">
-  <!-- Stat cards -->
-  <div class="bento-stat glass anim-in" style="--delay:0">
-    <div class="stat-icon stat-icon--indigo"><i data-lucide="list-todo"></i></div>
+  <!-- Stat: active tasks -->
+  <div class="bento-stat gcard anim-in" style="--delay:1">
+    <div class="stat-top">
+      <div class="stat-icon stat-icon--indigo"><i data-lucide="list-todo"></i></div>
+      {% if active_count > 0 %}<span class="stat-trend stat-trend--up">Активно</span>{% endif %}
+    </div>
     <div class="stat-value">{{ active_count }}</div>
     <div class="stat-label">Активных задач</div>
+    {% if tasks | length > 0 %}
+    <div class="stat-bar">
+      <div class="stat-bar-fill" style="width:{{ [done_count * 100 // (tasks | length), 100] | min }}%"></div>
+    </div>
+    {% endif %}
   </div>
 
-  <div class="bento-stat glass anim-in" style="--delay:1">
-    <div class="stat-icon stat-icon--emerald"><i data-lucide="check-circle-2"></i></div>
+  <!-- Stat: done -->
+  <div class="bento-stat gcard anim-in" style="--delay:2">
+    <div class="stat-top">
+      <div class="stat-icon stat-icon--emerald"><i data-lucide="check-circle-2"></i></div>
+    </div>
     <div class="stat-value">{{ done_count }}</div>
     <div class="stat-label">Выполнено</div>
   </div>
 
-  <div class="bento-stat glass anim-in" style="--delay:2">
-    <div class="stat-icon stat-icon--cyan"><i data-lucide="flame"></i></div>
+  <!-- Stat: streak -->
+  <div class="bento-stat gcard anim-in" style="--delay:3">
+    <div class="stat-top">
+      <div class="stat-icon stat-icon--cyan"><i data-lucide="flame"></i></div>
+      {% if best_streak >= 3 %}<span class="stat-trend stat-trend--up">🔥 Серия</span>{% endif %}
+    </div>
     <div class="stat-value">{{ best_streak }}</div>
     <div class="stat-label">Лучший streak</div>
   </div>
 
-  <div class="bento-stat glass anim-in" style="--delay:3">
-    <div class="stat-icon stat-icon--rose"><i data-lucide="triangle-alert"></i></div>
+  <!-- Stat: overdue -->
+  <div class="bento-stat gcard anim-in" style="--delay:4">
+    <div class="stat-top">
+      <div class="stat-icon stat-icon--rose"><i data-lucide="triangle-alert"></i></div>
+      {% if overdue_count > 0 %}<span class="stat-trend stat-trend--warn">!</span>{% endif %}
+    </div>
     <div class="stat-value">{{ overdue_count }}</div>
     <div class="stat-label">Просрочено</div>
   </div>
 
   <!-- Tasks widget -->
-  <div class="bento-widget bento-widget--tasks glass anim-in" style="--delay:4">
+  <div class="bento-widget gcard anim-in" style="--delay:5">
     <div class="widget-header">
       <h2 class="widget-title"><i data-lucide="check-square"></i> Задачи</h2>
-      <a href="{{ url_for('tasks.index') }}" class="widget-link">Все <i data-lucide="arrow-right"></i></a>
+      <a href="{{ url_for('tasks.index') }}" class="widget-link">
+        Все задачи <i data-lucide="arrow-right"></i>
+      </a>
     </div>
     {% set active_tasks = tasks | selectattr('completed', 'equalto', false) | list %}
     {% if active_tasks %}
       <ul class="task-list">
-        {% for task in active_tasks[:5] %}
+        {% for task in active_tasks[:6] %}
         <li class="task-item {% if task.is_overdue %}task-item--overdue{% endif %}">
+          <div class="prio-dot prio-dot--{{ task.priority }}"></div>
           <form method="POST" action="{{ url_for('tasks.toggle', task_id=task.id) }}" class="inline-form">
             <button type="submit" class="task-check" aria-label="Отметить выполненной">
               <i data-lucide="circle"></i>
@@ -54,10 +99,11 @@
           <div class="task-info">
             <span class="task-title">{{ task.title }}</span>
             {% if task.deadline %}
-            <span class="task-deadline {% if task.is_overdue %}task-deadline--overdue{% endif %}">
-              <i data-lucide="calendar"></i>
-              {{ task.deadline.strftime('%d.%m') }}
-            </span>
+            <div class="task-meta">
+              <span class="task-deadline {% if task.is_overdue %}task-deadline--overdue{% endif %}">
+                <i data-lucide="calendar"></i>{{ task.deadline.strftime('%d.%m') }}
+              </span>
+            </div>
             {% endif %}
           </div>
         </li>
@@ -67,27 +113,30 @@
       <div class="empty-state">
         <i data-lucide="inbox"></i>
         <p>Нет активных задач</p>
-        <a href="{{ url_for('tasks.index') }}" class="btn btn--ghost btn--sm">Добавить задачу</a>
+        <a href="{{ url_for('tasks.index') }}" class="btn btn--ghost btn--sm">Добавить</a>
       </div>
     {% endif %}
   </div>
 
   <!-- Habits widget -->
-  <div class="bento-widget bento-widget--habits glass anim-in" style="--delay:5">
+  <div class="bento-widget gcard anim-in" style="--delay:6">
     <div class="widget-header">
       <h2 class="widget-title"><i data-lucide="flame"></i> Привычки сегодня</h2>
-      <a href="{{ url_for('habits.index') }}" class="widget-link">Все <i data-lucide="arrow-right"></i></a>
+      <a href="{{ url_for('habits.index') }}" class="widget-link">
+        Все <i data-lucide="arrow-right"></i>
+      </a>
     </div>
     {% if habits %}
       <ul class="habit-list">
-        {% for habit in habits[:5] %}
+        {% for habit in habits[:6] %}
         <li class="habit-item">
           <div class="habit-info">
             <span class="habit-title">{{ habit.title }}</span>
-            <span class="habit-streak"><i data-lucide="flame"></i> {{ habit.streak }}</span>
+            <span class="habit-streak"><i data-lucide="flame"></i>{{ habit.streak }}</span>
           </div>
           <form method="POST" action="{{ url_for('habits.check', habit_id=habit.id) }}" class="inline-form">
-            <button type="submit" class="habit-check {% if habit.done_today %}habit-check--done{% endif %}" aria-label="{{ 'Снять отметку' if habit.done_today else 'Отметить выполненной' }}">
+            <button type="submit" class="habit-check {% if habit.done_today %}habit-check--done{% endif %}"
+                    aria-label="{{ 'Снять отметку' if habit.done_today else 'Отметить' }}">
               <i data-lucide="{{ 'check-circle-2' if habit.done_today else 'circle' }}"></i>
             </button>
           </form>
@@ -98,9 +147,34 @@
       <div class="empty-state">
         <i data-lucide="sparkles"></i>
         <p>Нет привычек</p>
-        <a href="{{ url_for('habits.index') }}" class="btn btn--ghost btn--sm">Добавить привычку</a>
+        <a href="{{ url_for('habits.index') }}" class="btn btn--ghost btn--sm">Добавить</a>
       </div>
     {% endif %}
   </div>
+
+  <!-- Progress ring -->
+  {% if habits %}
+  {% set done_habits = habits | selectattr('done_today') | list | length %}
+  {% set total_habits = habits | length %}
+  {% set pct = (done_habits * 100 // total_habits) if total_habits > 0 else 0 %}
+  {% set circumference = 220 %}
+  {% set offset = circumference - (circumference * pct // 100) %}
+  <div class="progress-widget gcard anim-in" style="--delay:7">
+    <div class="ring-wrap">
+      <svg viewBox="0 0 80 80" width="80" height="80">
+        <circle class="ring-track" cx="40" cy="40" r="35"/>
+        <circle class="ring-fill" cx="40" cy="40" r="35"
+                stroke-dasharray="{{ circumference }}"
+                stroke-dashoffset="{{ offset }}"/>
+      </svg>
+      <div class="ring-label">
+        <span class="ring-pct">{{ pct }}%</span>
+        <span class="ring-sub">Сегодня</span>
+      </div>
+    </div>
+    <div class="progress-title">Привычки<br>выполнены</div>
+    <div style="font-size:.72rem;color:var(--text-2);text-align:center">{{ done_habits }}/{{ total_habits }}</div>
+  </div>
+  {% endif %}
 </div>
 {% endblock %}

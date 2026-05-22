@@ -2,69 +2,74 @@
 {% block title %}Регистрация — FlowTrack{% endblock %}
 
 {% block content %}
-<div class="auth-wrap">
-  <div class="auth-card glass">
+<!-- Hero описание сверху -->
+<div class="register-hero">
+  <div class="register-hero-badge">
+    <span>⚡ FlowTrack</span>
+    — бесплатно, без рекламы
+  </div>
+  <h1>Держи задачи и привычки<br>под контролем каждый день</h1>
+  <p>Простой инструмент для людей, которые хотят делать больше. Отслеживай задачи с дедлайнами, строй привычки и смотри свой прогресс.</p>
+  <div class="register-features">
+    <div class="register-feature register-feature--indigo">
+      <i data-lucide="check-square"></i>
+      <span>Задачи с приоритетами</span>
+    </div>
+    <div class="register-feature register-feature--cyan">
+      <i data-lucide="flame"></i>
+      <span>Streak привычек</span>
+    </div>
+    <div class="register-feature register-feature--emerald">
+      <i data-lucide="layout-dashboard"></i>
+      <span>Дашборд со статистикой</span>
+    </div>
+    <div class="register-feature register-feature--amber">
+      <i data-lucide="smartphone"></i>
+      <span>Работает на телефоне</span>
+    </div>
+  </div>
+</div>
+
+<!-- Форма -->
+<div class="auth-body">
+  <div class="auth-card glass anim-in" style="--delay:0">
     <div class="auth-header">
       <span class="auth-logo">⚡</span>
       <h1 class="auth-title">Создать аккаунт</h1>
-      <p class="auth-subtitle">Начни отслеживать задачи и привычки</p>
+      <p class="auth-subtitle">Займёт меньше минуты</p>
     </div>
 
     <form method="POST" action="{{ url_for('auth.register') }}" class="auth-form" novalidate>
       <div class="field">
-        <label for="name" class="field-label">Имя <span aria-hidden="true" class="required">*</span></label>
+        <label for="name" class="field-label">Имя <span class="required">*</span></label>
         <div class="field-input-wrap">
           <i data-lucide="user" class="field-icon"></i>
-          <input
-            type="text" id="name" name="name"
-            class="field-input" placeholder="Как тебя зовут?"
-            autocomplete="name" required minlength="2"
-          >
+          <input type="text" id="name" name="name" class="field-input" placeholder="Как тебя зовут?" autocomplete="name" required minlength="2">
         </div>
       </div>
-
       <div class="field">
-        <label for="email" class="field-label">Email <span aria-hidden="true" class="required">*</span></label>
+        <label for="email" class="field-label">Email <span class="required">*</span></label>
         <div class="field-input-wrap">
           <i data-lucide="mail" class="field-icon"></i>
-          <input
-            type="email" id="email" name="email"
-            class="field-input" placeholder="you@example.com"
-            autocomplete="email" required
-          >
+          <input type="email" id="email" name="email" class="field-input" placeholder="you@example.com" autocomplete="email" required>
         </div>
       </div>
-
       <div class="field">
-        <label for="password" class="field-label">Пароль <span aria-hidden="true" class="required">*</span></label>
+        <label for="password" class="field-label">Пароль <span class="required">*</span></label>
         <div class="field-input-wrap">
           <i data-lucide="lock" class="field-icon"></i>
-          <input
-            type="password" id="password" name="password"
-            class="field-input" placeholder="Минимум 6 символов"
-            autocomplete="new-password" required minlength="6"
-          >
-          <button type="button" class="field-toggle" aria-label="Показать пароль" data-target="password">
-            <i data-lucide="eye"></i>
-          </button>
+          <input type="password" id="password" name="password" class="field-input" placeholder="Минимум 6 символов" autocomplete="new-password" required minlength="6">
+          <button type="button" class="field-toggle" aria-label="Показать пароль" data-target="password"><i data-lucide="eye"></i></button>
         </div>
       </div>
-
       <div class="field">
-        <label for="confirm" class="field-label">Повтори пароль <span aria-hidden="true" class="required">*</span></label>
+        <label for="confirm" class="field-label">Повтори пароль <span class="required">*</span></label>
         <div class="field-input-wrap">
           <i data-lucide="lock" class="field-icon"></i>
-          <input
-            type="password" id="confirm" name="confirm"
-            class="field-input" placeholder="Ещё раз"
-            autocomplete="new-password" required
-          >
-          <button type="button" class="field-toggle" aria-label="Показать пароль" data-target="confirm">
-            <i data-lucide="eye"></i>
-          </button>
+          <input type="password" id="confirm" name="confirm" class="field-input" placeholder="Ещё раз" autocomplete="new-password" required>
+          <button type="button" class="field-toggle" aria-label="Показать пароль" data-target="confirm"><i data-lucide="eye"></i></button>
         </div>
       </div>
-
       <button type="submit" class="btn btn--primary btn--full">
         <i data-lucide="user-plus"></i>
         Создать аккаунт

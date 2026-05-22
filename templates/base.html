@@ -6,7 +6,7 @@
   <title>{% block title %}FlowTrack{% endblock %}</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
@@ -20,20 +20,20 @@
       </a>
       <div class="nav-links" id="nav-links">
         <a href="{{ url_for('dashboard.index') }}" class="nav-link {% if request.endpoint == 'dashboard.index' %}active{% endif %}">
-          <i data-lucide="layout-dashboard"></i>
-          <span>Дашборд</span>
+          <i data-lucide="layout-dashboard"></i><span>Дашборд</span>
         </a>
         <a href="{{ url_for('tasks.index') }}" class="nav-link {% if request.endpoint and 'tasks' in request.endpoint %}active{% endif %}">
-          <i data-lucide="check-square"></i>
-          <span>Задачи</span>
+          <i data-lucide="check-square"></i><span>Задачи</span>
         </a>
         <a href="{{ url_for('habits.index') }}" class="nav-link {% if request.endpoint and 'habits' in request.endpoint %}active{% endif %}">
-          <i data-lucide="flame"></i>
-          <span>Привычки</span>
+          <i data-lucide="flame"></i><span>Привычки</span>
         </a>
       </div>
       <div class="nav-right">
-        <span class="nav-user">{{ current_user.name }}</span>
+        <div class="nav-user-chip">
+          <div class="nav-avatar">{{ current_user.name[0].upper() }}</div>
+          {{ current_user.name }}
+        </div>
         <a href="{{ url_for('auth.logout') }}" class="nav-logout" aria-label="Выйти">
           <i data-lucide="log-out"></i>
         </a>
@@ -50,7 +50,7 @@
       <div class="flash-container" role="alert" aria-live="polite">
         {% for category, message in messages %}
           <div class="flash flash--{{ category }}">
-            <i data-lucide="{{ 'alert-circle' if category == 'error' else 'check-circle' }}"></i>
+            <i data-lucide="{{ 'alert-circle' if category == 'error' else 'check-circle-2' }}"></i>
             <span>{{ message }}</span>
             <button class="flash-close" aria-label="Закрыть"><i data-lucide="x"></i></button>
           </div>

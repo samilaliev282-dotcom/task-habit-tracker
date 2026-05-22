@@ -39,7 +39,10 @@ def create():
         except ValueError:
             pass
 
-    task = Task(user_id=current_user.id, title=title, description=description, deadline=deadline)
+    priority = request.form.get('priority', 'medium')
+    if priority not in ('high', 'medium', 'low'):
+        priority = 'medium'
+    task = Task(user_id=current_user.id, title=title, description=description, deadline=deadline, priority=priority)
     db.session.add(task)
     db.session.commit()
     return redirect(url_for('tasks.index'))

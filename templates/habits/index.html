@@ -3,51 +3,66 @@
 
 {% block content %}
 <div class="page-header">
-  <div>
+  <div class="page-header-left">
     <h1 class="page-title">Привычки</h1>
-    <p class="page-subtitle">Стройся каждый день</p>
+    <p class="page-subtitle">Строй серии — каждый день на счету</p>
   </div>
-  <button class="btn btn--primary" id="open-habit-modal" aria-label="Создать привычку">
-    <i data-lucide="plus"></i>
-    <span>Новая привычка</span>
+  <button class="btn btn--cyan" id="open-habit-modal">
+    <i data-lucide="plus"></i><span>Новая привычка</span>
   </button>
 </div>
 
 {% if habits %}
 <div class="card-grid">
   {% for habit in habits %}
-  <div class="habit-card glass anim-in" style="--delay:{{ loop.index0 % 6 }}">
-    <div class="habit-card-header">
-      <div class="habit-streak-badge {% if habit.streak > 0 %}habit-streak-badge--active{% endif %}">
-        <i data-lucide="flame"></i>
-        <span>{{ habit.streak }} дн.</span>
+  {% set week = habit.last_7_days() %}
+  <div class="habit-card gcard anim-in" style="--delay:{{ loop.index0 % 6 }}">
+    <div class="habit-card-top">
+      <div class="habit-card-main">
+        <h3 class="habit-card-title">{{ habit.title }}</h3>
+        {% if habit.description %}
+        <p class="habit-card-desc">{{ habit.description }}</p>
+        {% endif %}
       </div>
-      <form method="POST" action="{{ url_for('habits.delete', habit_id=habit.id) }}" class="inline-form" onsubmit="return confirm('Удалить привычку?')">
-        <button type="submit" class="btn-icon btn-icon--danger" aria-label="Удалить привычку">
-          <i data-lucide="trash-2"></i>
-        </button>
-      </form>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
+        <div class="habit-streak-badge {% if habit.streak > 0 %}habit-streak-badge--active{% endif %}">
+          <i data-lucide="flame"></i>
+          {{ habit.streak }} дн.
+        </div>
+        <form method="POST" action="{{ url_for('habits.delete', habit_id=habit.id) }}" class="inline-form" onsubmit="return confirm('Удалить привычку?')">
+          <button type="submit" class="btn-icon btn-icon--danger" aria-label="Удалить"><i data-lucide="trash-2"></i></button>
+        </form>
+      </div>
     </div>
-    <h3 class="habit-card-title">{{ habit.title }}</h3>
-    {% if habit.description %}
-    <p class="habit-card-desc">{{ habit.description }}</p>
-    {% endif %}
-    <form method="POST" action="{{ url_for('habits.check', habit_id=habit.id) }}" class="inline-form habit-check-form">
-      <button type="submit" class="btn {% if habit.done_today %}btn--cyan{% else %}btn--outline{% endif %} btn--full"
-              aria-label="{{ 'Снять отметку за сегодня' if habit.done_today else 'Отметить за сегодня' }}">
+
+    <!-- 7-day calendar -->
+    <div class="habit-week">
+      {% for day_date, done in week %}
+      <div class="habit-day">
+        <span class="habit-day-label">{{ ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'][day_date.weekday()] }}</span>
+        <div class="habit-day-dot
+          {% if done %}habit-day-dot--done{% endif %}
+          {% if day_date == today %}habit-day-dot--today{% endif %}">
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <form method="POST" action="{{ url_for('habits.check', habit_id=habit.id) }}" class="inline-form">
+      <button type="submit" class="habit-check-btn {% if habit.done_today %}habit-check-btn--done{% endif %}">
         <i data-lucide="{{ 'check-circle-2' if habit.done_today else 'circle' }}"></i>
-        {{ 'Выполнено сегодня' if habit.done_today else 'Отметить сегодня' }}
+        {{ 'Выполнено сегодня ✓' if habit.done_today else 'Отметить сегодня' }}
       </button>
     </form>
   </div>
   {% endfor %}
 </div>
 {% else %}
-<div class="empty-page glass">
+<div class="empty-page gcard">
   <i data-lucide="sparkles"></i>
   <h2>Привычек нет</h2>
-  <p>Добавь первую привычку и начни строить серии</p>
-  <button class="btn btn--primary" id="open-habit-modal-empty">
+  <p>Добавь первую привычку и начни строить серии каждый день</p>
+  <button class="btn btn--cyan" id="open-habit-modal-empty">
     <i data-lucide="plus"></i> Добавить привычку
   </button>
 </div>
@@ -55,21 +70,19 @@
 
 <!-- Modal -->
 <div class="modal-overlay" id="habit-modal" role="dialog" aria-modal="true" aria-labelledby="habit-modal-title" hidden>
-  <div class="modal glass">
+  <div class="modal gcard">
     <div class="modal-header">
       <h2 id="habit-modal-title">Новая привычка</h2>
-      <button class="btn-icon" id="close-habit-modal" aria-label="Закрыть">
-        <i data-lucide="x"></i>
-      </button>
+      <button class="btn-icon" id="close-habit-modal" aria-label="Закрыть"><i data-lucide="x"></i></button>
     </div>
     <form method="POST" action="{{ url_for('habits.create') }}" class="modal-form">
       <div class="field">
         <label for="habit-title" class="field-label">Название <span class="required">*</span></label>
-        <input type="text" id="habit-title" name="title" class="field-input" placeholder="Например: Читать 30 минут" required>
+        <input type="text" id="habit-title" name="title" class="field-input" placeholder="Например: Читать 20 минут" required>
       </div>
       <div class="field">
         <label for="habit-desc" class="field-label">Описание</label>
-        <textarea id="habit-desc" name="description" class="field-input field-textarea" placeholder="Подробности (необязательно)" rows="3"></textarea>
+        <textarea id="habit-desc" name="description" class="field-input field-textarea" placeholder="Подробности..." rows="3"></textarea>
       </div>
       <div class="modal-actions">
         <button type="button" class="btn btn--ghost" id="close-habit-modal-2">Отмена</button>

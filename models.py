@@ -29,6 +29,7 @@ class Task(db.Model):
     title = db.Column(db.String(200), nullable=False)
     description = db.Column(db.Text, default='')
     deadline = db.Column(db.Date, nullable=True)
+    priority = db.Column(db.String(10), default='medium')  # high / medium / low
     completed = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
@@ -62,6 +63,11 @@ class Habit(db.Model):
             streak += 1
             check -= timedelta(days=1)
         return streak
+
+    def last_7_days(self):
+        from datetime import timedelta
+        log_set = {l.date for l in self.logs}
+        return [(date.today() - timedelta(days=6 - i), (date.today() - timedelta(days=6 - i)) in log_set) for i in range(7)]
 
 
 class HabitLog(db.Model):
